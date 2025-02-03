@@ -59,11 +59,11 @@ msh> history
 
 13. Your shell shall support redirection.  The syntax [process] > [file] tells your shell to redirect the process’s standard output to a file. 
 
-You do not need to support redirection for shell built-in commands. You do not need to support stderr redirection or appending to files (e.g. [process] >> [file]). You can assume that there will always be spaces around special characters < and >. 
+You do not need to support redirection for shell built-in commands. You do not need to support stderr redirection or appending to files (e.g. [process] >> [file]). You can assume that there will always be spaces around special characters < and >.  See popen.c in [Code-Examples](https://github.com/CSE3320-Spring-2025/Code-Examples)
 
-15. Your shell shall support pipes between programs. You can assume there will always be spaces around the special character | . See popen.c in [Code-Examples](https://github.com/CSE3320-Spring-2025/Code-Examples)
+15. Your shell shall support pipes between programs. You can assume there will always be spaces around the special character | . See pipe.c in [Code-Examples](https://github.com/CSE3320-Spring-2025/Code-Examples)
 
-16. Your program shall block the SIGINT and SIGTSTP signals.
+16. Your program shall block the SIGINT and SIGTSTP signals. See sigint.c in [Code-Examples](https://github.com/CSE3320-Spring-2025/Code-Examples)
         
 17. Tabs or spaces shall be used to indent the code. Your code must use 
 one or the other. All indentation must be consistent.
