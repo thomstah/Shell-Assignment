@@ -38,7 +38,9 @@
 
 #define MAX_COMMAND_SIZE 128    // The maximum command-line size
 
-#define MAX_NUM_ARGUMENTS 1     // Mav shell currently only supports one argument
+#define MAX_NUM_ARGUMENTS 10    // Mav shell currently only supports one argument
+
+#define MAX_HISTORY 50
 
 int main()
 {
@@ -93,11 +95,34 @@ int main()
     // Now print the tokenized input as a debug check
     // \TODO Remove this for loop and replace with your shell functionality
 
-    int token_index  = 0;
-    for( token_index = 0; token_index < token_count; token_index ++ ) 
+    if(token_count == 0)
     {
-      printf("token[%d] = %s\n", token_index, token[token_index] );  
+      continue;
     }
+
+    if (token_count > 0 && token[0] && strcmp(token[0], "cd") == 0) 
+    {
+      char *directory;
+
+      if (token_count == 1)
+      {
+        directory = getenv("HOME");
+      }
+      else
+      {
+        directory = token[1];
+      }
+      if (chdir(directory) != 0)
+      {
+        perror("cd");
+      }
+      continue;
+    } 
+    else if(token_count > 0 && token[0] && (strcmp(token[0], "quit") || strcmp(token[0], "exit")))
+    {
+      break;
+    }
+    
 
     // Cleanup allocated memory
     for( int i = 0; i < MAX_NUM_ARGUMENTS; i++ )
