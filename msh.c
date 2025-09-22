@@ -100,7 +100,7 @@ int main()
       continue;
     }
 
-    if (token_count > 0 && token[0] && strcmp(token[0], "cd") == 0) 
+    if (token_count > 0 && token[0] && strcmp(token[0], "cd") == 0)  // cd command
     {
       char *directory;
 
@@ -117,10 +117,30 @@ int main()
         perror("cd");
       }
       continue;
-    } 
-    else if(token_count > 0 && token[0] && (strcmp(token[0], "quit") || strcmp(token[0], "exit")))
+    }
+    else if(token_count > 0 && token[0] && (strcmp(token[0], "quit") == 0 || strcmp(token[0], "exit") == 0)) // handles quit and exit
     {
       break;
+    }
+    else
+    {
+      pid_t pid = fork();
+
+      if (pid == 0) {
+        execvp(token[0], token);
+        perror("execvp failed");
+        exit(EXIT_FAILURE);
+      }
+      else if (pid > 0)
+      {
+        int status;
+        wait ( &status );
+      }
+      else
+      {
+        perror("fork failed");
+      }
+
     }
     
 
