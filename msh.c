@@ -41,6 +41,8 @@
 #define MAX_NUM_ARGUMENTS 10    // Mav shell currently only supports one argument
 
 #define MAX_HISTORY 50
+char *history[MAX_HISTORY];
+int history_count = 0;
 
 int main()
 {
@@ -58,6 +60,26 @@ int main()
     // inputs something since fgets returns NULL when there
     // is no input
     while( !fgets (command_string, MAX_COMMAND_SIZE, stdin) );
+
+    //history management
+    if(command_string[strspn(command_string, WHITESPACE)] != '\0')
+    {
+      command_string[strcspn(command_string, "\n")] = '\0';
+      if (history_count < MAX_HISTORY) {
+        history[history_count] = strdup(command_string);
+        history_count++;
+      }
+      else 
+      {
+        free(history[0]);
+        for (int i = 1; i < MAX_HISTORY; i++)
+        {
+          history[i-1] = history[i];
+        }
+        history[MAX_HISTORY-1] = strdup(command_string);
+      }
+
+    }
 
     /* Parse input */
     char *token[MAX_NUM_ARGUMENTS];
@@ -100,7 +122,40 @@ int main()
       continue;
     }
 
-    if (token_count > 0 && token[0] && strcmp(token[0], "cd") == 0)  // cd command
+    if(token_count > 0 && strcmp(token[0], "history") == 0) // history command
+    {
+      for (int i = 0; i < history_count; i++)
+      {
+        printf("%d: %s\n", i+1, history[i]);
+      }
+      continue;
+    }
+    else if(token_count > 0 && token[0] && token[0][0] == '!')
+    {
+      int recall = atoi(&token[0][1]);
+      if(recall < 1 || recall > history_count) 
+      {
+        printf("This number isn't an option in the history... lol\n");
+        continue;
+      }
+
+      strncpy(command_string, history[recall - 1], MAX_COMMAND_SIZE - 1);
+      command_string[MAX_COMMAND_SIZE-1] = '\0';
+
+      for( int i = 0; i < MAX_NUM_ARGUMENTS; i++ ) //cleanup allocated memory and registers the recalled commend thorugh the loop
+      {
+        if( token[i] != NULL )
+        {
+          free( token[i] );
+        }
+      }
+
+    free( head_ptr );
+
+    continue;
+    }
+
+    else if (token_count > 0 && token[0] && strcmp(token[0], "cd") == 0)  // cd command
     {
       char *directory;
 
@@ -122,19 +177,27 @@ int main()
     {
       break;
     }
-    else
+    else //external commands like ls and stuff *shrugs*
     {
       pid_t pid = fork();
 
       if (pid == 0) {
+        if(token_count < MAX_NUM_ARGUMENTS)
+        {
+          token[token_count] = NULL;
+        } else 
+        {
+          token[MAX_NUM_ARGUMENTS - 1] = NULL;
+        }
+
         execvp(token[0], token);
-        perror("execvp failed");
+        fprintf(stderr, "%s: Command not found.\n", token[0]);
         exit(EXIT_FAILURE);
       }
       else if (pid > 0)
       {
         int status;
-        wait ( &status );
+        wait( &status );
       }
       else
       {
@@ -158,6 +221,8 @@ int main()
   }
 
   free( command_string );
+  for (int i = 0; i < history_count; ++i)
+    free(history[i]);
 
   return 0;
   // e1234ca2-76f3-90d6-0703ac120004
