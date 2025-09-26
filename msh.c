@@ -122,7 +122,7 @@ int main()
       continue;
     }
 
-    if(token_count > 0 && strcmp(token[0], "history") == 0) // history command
+    if(token_count > 0 && token[0] && strcmp(token[0], "history") == 0) // history command
     {
       for (int i = 0; i < history_count; i++)
       {
@@ -130,6 +130,7 @@ int main()
       }
       continue;
     }
+
     else if(token_count > 0 && token[0] && token[0][0] == '!')
     {
       int recall = atoi(&token[0][1]);
@@ -139,23 +140,38 @@ int main()
         continue;
       }
 
-      strncpy(command_string, history[recall - 1], MAX_COMMAND_SIZE - 1);
-      command_string[MAX_COMMAND_SIZE-1] = '\0';
+      char *recalled_cmd = history[recall-1];
 
-      for( int i = 0; i < MAX_NUM_ARGUMENTS; i++ ) //cleanup allocated memory and registers the recalled commend thorugh the loop
+      // frees previous tokenz
+      for (int i = 0; i < MAX_NUM_ARGUMENTS; i++) 
       {
-        if( token[i] != NULL )
+        if (token[i] != NULL)
         {
-          free( token[i] );
+           free(token[i]);
         }
+
       }
 
-    free( head_ptr );
+      free(head_ptr);
 
-    continue;
+      strcpy(command_string, recalled_cmd);
+      command_string[MAX_COMMAND_SIZE-1] = '\0';
+
+      token_count = 0;
+
+      //redos tokenization for recalled command
+      working_string = strdup(command_string);
+      head_ptr = working_string;
+      while (((argument_ptr = strsep(&working_string, WHITESPACE)) != NULL) && (token_count < MAX_NUM_ARGUMENTS))
+      {
+        token[token_count] = strndup(argument_ptr, MAX_COMMAND_SIZE);
+        if(strlen(token[token_count]) == 0)
+          token[token_count] = NULL;
+        token_count++;
+      }
     }
 
-    else if (token_count > 0 && token[0] && strcmp(token[0], "cd") == 0)  // cd command
+    if (token_count > 0 && token[0] && strcmp(token[0], "cd") == 0)  // cd command
     {
       char *directory;
 
